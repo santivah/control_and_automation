@@ -22,8 +22,10 @@ double quadratic_sum_v = 0.0;
 double quadratic_sum_rms = 0.0;       // This variable accumulates the quadratic sum of instantaneous currents
 const int sampleDuration = 20;          // Number of samples that determine how often the RMS is calculated
 int quadratic_sum_counter = 0;       // Counter of how many times values have been accumulated in the quadratic sum
-double freq = 50.0;                     // Define the frequency of the power cycle
+double freq = 50.0;      // Define the frequency of the power cycle
 
+//number 
+double number2;
 
 // Define variables to calculate an average of the current
 double accumulated_current = 0.0;       // Accumulator of RMS values for averaging
@@ -200,7 +202,7 @@ void loop() {
   Serial.print(";");
   Serial.print(number2);
   Serial.println(";");
-  number1++;
+  Irms_filt++;
   number2++;;
 
   delay(2000);
