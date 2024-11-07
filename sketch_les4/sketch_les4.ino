@@ -191,4 +191,21 @@ void loop() {
     // Print the filtered current
     Serial.println(Irms_filt);
   }
+
+  // code for sensor 2 
+  number2 = 10;
+
+  // code from nov 7
+  Serial.print(Irms_filt);
+  Serial.print(";");
+  Serial.print(number2);
+  Serial.println(";");
+  number1++;
+  number2++;;
+
+  delay(2000);
 }
+
+
+
+

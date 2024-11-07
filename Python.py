@@ -9,4 +9,4 @@ import re
 
 # set up serial port
 ser = serial.Serial('COM3', 9600, timeout =1)
-time.sleep(2) # wait for Arduino to 
+time.sleep(2) # wait for Arduino to
