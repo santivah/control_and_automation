@@ -6,8 +6,8 @@
 // VARIABLE DECLARATIONS
 //=================================================================================================================================
 
-// Define the pins of the Arduino ADC where the current sensor is measured
-const int SensorPin = A1, RefPin = A2;
+// Define the pins of the Arduino 
+const int SensorPin = A1, RefPin = A2, relayPin = D7;
 
 // Define the data from the current sensor
 const int Rshunt = 33.3;                // Resistance of the transformer: Model 50 A: 20 ohms, Model 30 A: 33.3 ohms
@@ -19,18 +19,18 @@ unsigned long time_ant = 0, difTime = 0, act_time = 0, reading_time = 0, dif_rea
  
 // Define variables to calculate the RMS of a power cycle
 double quadratic_sum_v = 0.0;
-double quadratic_sum_rms = 0.0;       // This variable accumulates the quadratic sum of instantaneous currents
-const int sampleDuration = 20;          // Number of samples that determine how often the RMS is calculated
-int quadratic_sum_counter = 0;       // Counter of how many times values have been accumulated in the quadratic sum
-double freq = 50.0;      // Define the frequency of the power cycle
+double quadratic_sum_rms = 0.0;   // This variable accumulates the quadratic sum of instantaneous currents
+const int sampleDuration = 20;    // Number of samples that determine how often the RMS is calculated
+int quadratic_sum_counter = 0;    // Counter of how many times values have been accumulated in the quadratic sum
+double freq = 50.0;               // Define the frequency of the power cycle
 
-//number 
+//random number for the part of the code for sending data to python, should delete later 
 double number2;
 
 // Define variables to calculate an average of the current
 double accumulated_current = 0.0;       // Accumulator of RMS values for averaging
 const int sampleAverage = 250;          // Number of samples that determine how often the RMS average is calculated
-int accumulated_counter = 0;             // Counter of how many times RMS values have been accumulated
+int accumulated_counter = 0;            // Counter of how many times RMS values have been accumulated
 bool first_run = true;
 double v_calib_acum = 0;
 double v_calib = 0;
@@ -38,18 +38,19 @@ int i = 0;
 byte writeBuf[3];
 
 
+double Irms_filt = 0;
+
+
 //=================================================================================================================================
 // Helper functions: Function created to partition the problem in smaller parts
 //=================================================================================================================================
 void config_i2c(){
   Wire.begin(); // begin I2C
-
   // ASD1115
   // set config register and start conversion
   // ANC1 and GND, 4.096v, 128s/
 
   writeBuf[0] = 1;    // config register is 1
-  
   writeBuf[1] = 0b11010010; // 0xC2 single shot off <== ORIGINAL - single conversion/ AIN1 & GND/ 4.096V/ Continuous (0)
   
   // bit 15 flag bit for single shot
@@ -102,6 +103,7 @@ float read_voltage(){
 void setup() {
   Serial.begin(115200);
   config_i2c();
+  pinMode(relayPin, OUTPUT);
 }
 
 
@@ -194,18 +196,24 @@ void loop() {
     Serial.println(Irms_filt);
   }
 
-  // code for sensor 2 
-  number2 = 10;
-
-  // code from nov 7
+  // The following code is for the transfer of data from arduino to python (read_data.py)
+  number2 = 10; // we dont have another sensor right now, but the sensor data would go here
   Serial.print(Irms_filt);
   Serial.print(";");
   Serial.print(number2);
   Serial.println(";");
   Irms_filt++;
   number2++;;
+  // delay(2000);
 
+  // sending signals to the relay 
+  digitalWrite(relayPin, HIGH);
   delay(2000);
+
+  digitalWrite(relayPin, LOW);
+  delay(2000);
+
+
 }
 
 
