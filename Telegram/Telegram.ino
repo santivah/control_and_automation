@@ -1,13 +1,13 @@
 #include <WiFi.h>
-#include <WiFiClientSecure.h
+#include <WiFiClientSecure.h>
 #include <UniversalTelegramBot.h>
-#include <ArdionoJson.h>
+#include <ArduinoJson.h>
 
 const char* ssid = "ard-citcea";
 const char* password = "ax1ohChooli0quof";
 
-#define BOTtoken "2017036(...)"
-#define CHAT_ID "13982653"
+#define BOTtoken "8190157750:AAFva8eCbX0hptrUPS2EWAW8jk-tQ8LceAU"
+#define CHAT_ID "7994481953"
 
 WiFiClientSecure client;
 UniversalTelegramBot bot(BOTtoken, client);
@@ -25,10 +25,10 @@ void setup() {
   Serial.println("");
   Serial.println("WiFi connected");
 
-  bot.sendMessage(CHAT_ID, "Bot started up", "");
+  bot.sendMessage(CHAT_ID, "hi", "");
 }
 
 void loop() {
-  bot.sendMessage(CHAT_ID, "Attention!");
+  //bot.sendMessage(CHAT_ID, "Attention!");
 
 }
