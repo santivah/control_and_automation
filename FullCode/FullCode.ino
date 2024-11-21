@@ -9,6 +9,7 @@
 // Define the pins of the Arduino 
 const int SensorPin = A1, RefPin = A2, relayPin = D7;
 
+
 // Define the data from the current sensor
 const int Rshunt = 33.3;                // Resistance of the transformer: Model 50 A: 20 ohms, Model 30 A: 33.3 ohms
 double n_trafo = 1000;                  // Number of turns between primary and secondary
@@ -196,8 +197,17 @@ void loop() {
     Serial.println(Irms_filt);
   }
 
+<<<<<<< Updated upstream:FullCode/FullCode.ino
   // The following code is for the transfer of data from arduino to python (read_data.py)
   number2 = 10; // we dont have another sensor right now, but the sensor data would go here
+=======
+
+
+  // code for sensor 2 
+  number2 = 10;
+
+  // code from nov 7
+>>>>>>> Stashed changes:sketch_les4/sketch_les4.ino
   Serial.print(Irms_filt);
   Serial.print(";");
   Serial.print(number2);
