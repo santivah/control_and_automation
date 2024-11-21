@@ -1,3 +1,6 @@
+
+# This file works with the send_communications arduino file to send Arduino values to python
+
 import serial
 import time
 import re

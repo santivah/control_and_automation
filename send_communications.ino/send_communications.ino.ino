@@ -1,3 +1,5 @@
+// This file works with the read_data python file to send Arduino values to python 
+
 int number1 = 42; // First number to print
 int number2 = 17; // Second number to print
 
