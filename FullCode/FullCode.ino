@@ -41,6 +41,9 @@ byte writeBuf[3];
 
 double Irms_filt = 0;
 
+bool relayState = LOW;   // Initial state of the relay
+unsigned long previous_time = 0; // Stores the last time the pin was toggled
+
 
 //=================================================================================================================================
 // Helper functions: Function created to partition the problem in smaller parts
@@ -115,30 +118,36 @@ void loop() {
   // Read the time in microseconds since the Arduino started
   act_time = micros();
   // Calculate the time difference between the current time and the last time the instantaneous current was updated
-  difTime = (act_time - time_ant)/1000000; //Change variable from microseconds to seconds
+  difTime = act_time - time_ant; // in microseconds
+  // Serial.print("act_time: ");
+  // Serial.println(act_time);
+  // Serial.print("time ant: ");
+  // Serial.println(time_ant);
+  // Serial.print("diftime: ");
+  // Serial.println(difTime);
   
 
   // EVERY 1 MILLISECOND, READ ADC AND CALCULATE THE INSTANTANEOUS CURRENT TO CALCULATE THE RMS
   if (difTime >= 1000) {
-    //Sync debug
-    //Serial.println(difTime);
+    //debug
+    //Serial.println("in loop 1");
 
     // Update the time record with the current time
     time_ant = act_time;
-
 
     //=================================================================================================================================
     // Read the voltage from the sensor
     double Vinst = read_voltage() - 1.65;
 
-    //Serial.print("Voltage in V: ");
-    //Serial.println(Vinst);
+    // Serial.print("Vinst: ");
+    // Serial.println(Vinst);
     //=================================================================================================================================
 
     //=================================================================================================================================
     // Convert voltage in shunt to current measurement
     double Iinst = Vinst*30; // 30A = 1V
-    //Serial.println(Iinst);
+    // Serial.print("Iinst: ");
+    // Serial.println(Iinst);
     //=================================================================================================================================
     //=================================================================================================================================
     // Accumulate quadratic sum
@@ -150,15 +159,15 @@ void loop() {
 
   // EVERY POWER CYCLE (20 ACCUMULATED VALUES), CALCULATE RMS
   if (quadratic_sum_counter >= sampleDuration) {
-    //Sync debug
-    //Serial.println(millis() - timer1);
-    //timer1 = millis();
+    //Serial.println("goes in here every power cycle");
 
     //=================================================================================================================================
     // Take the square root to calculate the RMS of the last power cycle
     double Irms = sqrt(freq*quadratic_sum_rms);
     double Vrms = sqrt(freq*quadratic_sum_v);
-    //Serial.println(Vrms);
+
+    // Serial.print("Vrms: ");
+    // Serial.println(Vrms);
     //=================================================================================================================================
 
     // Reset accumulation values to calculate the RMS of the last power cycle
@@ -174,54 +183,39 @@ void loop() {
     accumulated_current += Irms;
     accumulated_counter++;
     
-    //Serial.println(Irms);
+    // Serial.print("Irms: ");
+    // Serial.println(Irms);
   }
 
   // EVERY 250 POWER CYCLES (approximately 5 seconds), CALCULATE THE AVERAGE RMS
   if (accumulated_counter >= sampleAverage) {
-    //Sync debug
-    //Serial.println(millis() - timer1);
-    //timer1 = millis();
+    //Serial.println("Goes in here every 250 power cycles");
 
     //=================================================================================================================================
     // Calculate the average of the RMS current
     double Irms_filt = accumulated_current/((double)accumulated_counter);
-    //Serial.println(Irms_filt);
+    Serial.print("Irms_filt: ");
+    Serial.println(Irms_filt);
     //=================================================================================================================================
 
     // Reset accumulation values to calculate the average RMS
     accumulated_current = 0;
     accumulated_counter = 0;
 
-    // Print the filtered current
-    Serial.println(Irms_filt);
   }
 
-<<<<<<< Updated upstream:FullCode/FullCode.ino
-  // The following code is for the transfer of data from arduino to python (read_data.py)
-  number2 = 10; // we dont have another sensor right now, but the sensor data would go here
-=======
 
+  // toggle the relay on and off 
+  if (act_time - previous_time >= 4000000) { // in microseconds
+    Serial.println("toggles relay");
+    previous_time = act_time; // Update the time for the last toggle
+    
+    // Toggle the relay state
+    relayState = !relayState;
+    digitalWrite(relayPin, relayState);
+  }
 
-  // code for sensor 2 
-  number2 = 10;
-
-  // code from nov 7
->>>>>>> Stashed changes:sketch_les4/sketch_les4.ino
-  Serial.print(Irms_filt);
-  Serial.print(";");
-  Serial.print(number2);
-  Serial.println(";");
-  Irms_filt++;
-  number2++;;
-  // delay(2000);
-
-  // sending signals to the relay 
-  digitalWrite(relayPin, HIGH);
-  delay(2000);
-
-  digitalWrite(relayPin, LOW);
-  delay(2000);
+  //digitalWrite(relayPin, HIGH); // this means that the switch is off and power does no flow through it 
 
 
 }
