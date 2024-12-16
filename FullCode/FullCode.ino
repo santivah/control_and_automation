@@ -9,6 +9,8 @@
 // Define the pins of the Arduino 
 const int SensorPin = A1, RefPin = A2, relayPin = D7;
 
+const int buttonPin = D2;
+
 
 // Define the data from the current sensor
 const int Rshunt = 33.3;                // Resistance of the transformer: Model 50 A: 20 ohms, Model 30 A: 33.3 ohms
@@ -108,7 +110,10 @@ void setup() {
   Serial.begin(115200);
   config_i2c();
   pinMode(relayPin, OUTPUT);
+
+  pinMode(buttonPin, INPUT); //declare sensor as input
 }
+
 
 
 //=================================================================================================================================
@@ -155,6 +160,7 @@ void loop() {
     quadratic_sum_v += Vinst*Vinst*difTime;
     //=================================================================================================================================
     quadratic_sum_counter++;
+
   }
 
   // EVERY POWER CYCLE (20 ACCUMULATED VALUES), CALCULATE RMS
@@ -217,7 +223,14 @@ void loop() {
 
   //digitalWrite(relayPin, HIGH); // this means that the switch is off and power does no flow through it 
 
-
+  if (digitalRead(buttonPin) == HIGH)
+      {
+        Serial.println("there is movement");
+      }
+  else {
+        Serial.println("there is no movement");
+      }
+  
 }
 
 
