@@ -223,7 +223,7 @@ void loop() {
 
   //digitalWrite(relayPin, HIGH); // this means that the switch is off and power does no flow through it 
 
-  if (digitalRead(buttonPin) == HIGH)
+  if (digitalRead(buttonPin) == LOW)
       {
         Serial.println("there is movement");
       }
