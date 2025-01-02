@@ -1,10 +1,26 @@
 #include <Wire.h>
+//Telegram:
+#include <WiFi.h>
+#include <WiFiClientSecure.h>
+#include <UniversalTelegramBot.h>
+#include <ArduinoJson.h>
+
 
 #define ADS1115_ADDRESS 0x48
 
 //=================================================================================================================================
 // VARIABLE DECLARATIONS hehe
 //=================================================================================================================================
+
+// Telegram part
+const char* ssid = "ard-citcea";
+const char* password = "ax1ohChooli0quof";
+
+#define BOTtoken "8190157750:AAFva8eCbX0hptrUPS2EWAW8jk-tQ8LceAU"
+#define CHAT_ID "7994481953"
+
+WiFiClientSecure client;
+UniversalTelegramBot bot(BOTtoken, client);
 
 // Define the pins of the Arduino 
 const int SensorPin = A1, RefPin = A2, relayPin = D7;
@@ -112,6 +128,20 @@ void setup() {
   pinMode(relayPin, OUTPUT);
 
   pinMode(buttonPin, INPUT); //declare sensor as input
+
+  //Telegram section:
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+
+  client.setCACert(TELEGRAM_CERTIFICATE_ROOT);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.println("WiFi connected");
+
 }
 
 
@@ -202,6 +232,15 @@ void loop() {
     double Irms_filt = accumulated_current/((double)accumulated_counter);
     Serial.print("Irms_filt: ");
     Serial.println(Irms_filt);
+    // Send a message when the laptop is connected to the electricity
+    if (Irms_filt > 400)
+      {
+        bot.sendMessage(CHAT_ID, "Laptop charging!", "");
+      }
+    else
+      {
+        bot.sendMessage(CHAT_ID, "Laptop not charging!", "");
+      }
     //=================================================================================================================================
 
     // Reset accumulation values to calculate the average RMS
@@ -212,25 +251,27 @@ void loop() {
 
 
   // toggle the relay on and off 
-  if (act_time - previous_time >= 4000000) { // in microseconds
+  if (act_time - previous_time >= 5000000) { // in microseconds. We can change the value to measure the current
     Serial.println("toggles relay");
     previous_time = act_time; // Update the time for the last toggle
     
     // Toggle the relay state
     relayState = !relayState;
+    Serial.println(relayState);
     digitalWrite(relayPin, relayState);
   }
 
   //digitalWrite(relayPin, HIGH); // this means that the switch is off and power does no flow through it 
 
-  if (digitalRead(buttonPin) == HIGH)
-      {
-        Serial.println("there is movement");
-      }
-  else {
-        Serial.println("there is no movement");
-      }
-  
+  // if (digitalRead(buttonPin) == LOW)
+  //     {
+  //       Serial.println("there is movement");
+  //     }
+  // else {
+  //       Serial.println("there is no movement");
+  //     }
+
+
 }
 
 
