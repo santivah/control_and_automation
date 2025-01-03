@@ -45,9 +45,6 @@ def get_battery_state():
     """
     c = wmi.WMI()
     batteries = c.Win32_Battery()
-
-    if not batteries:
-        return None  # No battery data
     return batteries[0].BatteryStatus
 
 ######################################
@@ -56,8 +53,6 @@ def get_battery_state():
 def get_battery_percentage():
     c = wmi.WMI()
     batteries = c.Win32_Battery()
-    if not batteries:
-        return None  # No battery found
     return batteries[0].EstimatedChargeRemaining
 
 ######################################
@@ -71,10 +66,13 @@ def get_remaining_charging_time():
     if state == 2:  # 2 = Charging
         c = wmi.WMI()
         batteries = c.Win32_Battery()
-        if not batteries:
+        if batteries[0].EstimatedRunTime == 71582788: # code is not supported
+            print("Code is not supported")
             return None
-        return batteries[0].EstimatedRunTime  # in minutes
+        else:
+            return batteries[0].EstimatedRunTime  # in minutes
     # If battery is discharging or fully charged, we return None.
+    print("Computer is not charging")
     return None
 
 ######################################
@@ -133,7 +131,6 @@ def control_charging(start_dt, end_dt):
         estimated_charge_time = get_remaining_charging_time()
 
         if estimated_charge_time is None:
-            print("The computer is not plugged in. To charge, plug it in!")
             break
         else:
             print(f"Time left in window: {time_left_in_window:.1f} min, "
