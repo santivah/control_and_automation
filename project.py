@@ -128,6 +128,7 @@ def control_charging(start_dt, end_dt):
             continue
 
         time_left_in_window = (end_dt - now).total_seconds() / 60.0
+        # estimated_charge_time = 50
         estimated_charge_time = get_remaining_charging_time()
 
         if estimated_charge_time is None:
@@ -141,11 +142,11 @@ def control_charging(start_dt, end_dt):
             print("Charging relay ON (must reach 100% by deadline).")
             # ... code to switch relay ON ...
         else:
-            if carbonIntensity <= 130:  # theshold is 130g CO2 eq/ kWh
-                print("Charging relay ON")
+            if carbonIntensity <= 90:  # threshold is 130g CO2 eq/ kWh
+                print("Charging relay ON (carbon emission is low)")
                 # ... code to switch relay ON ...
             else:
-                print("Charging relay OFF")
+                print("Charging relay OFF (carbon emission is high)")
                 # ... code to switch relay OFF ...
         time.sleep(60)
 
