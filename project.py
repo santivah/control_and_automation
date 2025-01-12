@@ -4,6 +4,10 @@ import time
 import wmi
 import ctypes
 from ctypes import wintypes
+import serial
+import time
+import re
+import pandas as pd
 
 ######################################
 # CO2 intensity API
@@ -32,6 +36,48 @@ data_json = response.json()
 
 carbonIntensity = data_json['carbonIntensity']
 current_time =  datetime.datetime.strptime(data_json['datetime'], "%Y-%m-%dT%H:%M:%S.%f%z")
+
+######################################
+# Get current measurement from Arduino
+######################################
+# Set up the serial connection (adjust 'COM3' to your correct port)
+ser = serial.Serial('COM4', 115200, timeout=1)
+time.sleep(2)  # Wait for the Arduino to initialize
+
+# initialize dataframe
+df = pd.DataFrame(columns=["Datetime", "Current"])
+
+try:
+    while True:
+        # Check if data is available to read
+        if ser.in_waiting > 0:
+            # Read a line from the serial port, decode it and remove newline characters
+            line = ser.readline().decode('utf-8').strip()
+
+            # Get the current timestamp
+            timestamp = datetime.now()
+
+            current = re.findall(pattern=r"[-+]?\d*\.\d+|[-+]?\d+", string=line)
+            print("Current: ", current)
+            # Print the received data from Arduino
+
+            # Append the data to the DataFrame
+            new_row = {"Datetime": timestamp, "Current": current}
+            # df = df.append(new_row, ignore_index=True)
+
+            new_row=pd.DataFrame([new_row])
+            df=pd.concat([df,new_row],ignore_index=True)
+
+
+except KeyboardInterrupt:
+    # Handle manual interruption (e.g., pressing Ctrl+C)
+    print("Program interrupted by user.")
+finally:
+    # Close the serial port when the program ends
+    ser.close()
+
+    # Save the DataFrame to a CSV file
+    df.to_csv("current_data.csv", index=False)
 
 ######################################
 # STATE OF BATTERY
@@ -128,8 +174,8 @@ def control_charging(start_dt, end_dt):
             continue
 
         time_left_in_window = (end_dt - now).total_seconds() / 60.0
-        # estimated_charge_time = 50
-        estimated_charge_time = get_remaining_charging_time()
+        estimated_charge_time = 50
+        # estimated_charge_time = get_remaining_charging_time()
 
         if estimated_charge_time is None:
             break

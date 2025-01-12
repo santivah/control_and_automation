@@ -8,7 +8,7 @@ import pandas as pd
 from datetime import datetime
 
 # Set up the serial connection (adjust 'COM3' to your correct port)
-ser = serial.Serial('COM20', 9600, timeout=1)  # Change COM3 to your port
+ser = serial.Serial('COM3', 9600, timeout=1)  # Change COM3 to your port
 time.sleep(2)  # Wait for the Arduino to initialize
 
 # initialize dataframe
