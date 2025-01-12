@@ -29,18 +29,15 @@ def get_carbon_intensity(zone="ES"):
     :param zone: Zone code for the API request (e.g., "ES" for Spain).
     :return: Carbon intensity (gCO2eq/kWh) and timestamp as a tuple.
     """
-    try:
-        headers = {'auth-token': CARBON_INTENSITY_TOKEN}
-        params = {'zone': zone}
-        response = requests.get(CARBON_INTENSITY_API_URL, headers=headers, params=params)
-        response.raise_for_status()
-        data = response.json()
-        carbon_intensity = data['carbonIntensity']
-        timestamp = datetime.datetime.strptime(data['datetime'], "%Y-%m-%dT%H:%M:%S.%f%z")
-        return carbon_intensity, timestamp
-    except requests.RequestException as e:
-        print(f"Error fetching carbon intensity data: {e}")
-        return None, None
+
+    headers = {'auth-token': CARBON_INTENSITY_TOKEN}
+    params = {'zone': zone}
+    response = requests.get(CARBON_INTENSITY_API_URL, headers=headers, params=params)
+    response.raise_for_status()
+    data = response.json()
+    carbon_intensity = data['carbonIntensity']
+    timestamp = datetime.datetime.strptime(data['datetime'], "%Y-%m-%dT%H:%M:%S.%f%z")
+    return carbon_intensity, timestamp
 
 ######################################
 # SERIAL COMMUNICATION
@@ -163,10 +160,11 @@ def control_charging(start_dt, end_dt, serial_conn):
     """
     while True:
         now = datetime.datetime.now()
+        relay_off(serial_conn)
 
         if now >= end_dt:
             print("End of charging window reached. Stopping control loop.")
-            relay_off(serial_conn)
+            relay_on(serial_conn)
             break
 
         if now < start_dt:
@@ -175,47 +173,41 @@ def control_charging(start_dt, end_dt, serial_conn):
             continue
 
         status = get_battery_state()
-        if status == 1:
-            print("Computer is not charging.")
-            relay_off(serial_conn)
-            break
-
         charging_current = measure_current(serial_conn)
+
         if charging_current is None:
            print("Computer is not charging.")
-           relay_off(serial_conn)
            break
+        elif status == 1:
+            print("Computer is not plugged.")
+            break
+        else:
+            percentage = get_battery_percentage()
+            current_capacity = FULL_CHARGE_CAPACITY * (percentage / 100)
+            #print(charging_current)
 
-        percentage = get_battery_percentage()
-        current_capacity = FULL_CHARGE_CAPACITY * (percentage / 100)
-        #print(charging_current)
+            estimated_time = calculate_remaining_time(FULL_CHARGE_CAPACITY, current_capacity, charging_current, VOLTAGE)
+            time_left_in_window = (end_dt - now).total_seconds() / 60.0
 
-        estimated_time = calculate_remaining_time(FULL_CHARGE_CAPACITY, current_capacity, charging_current, VOLTAGE)
-        time_left_in_window = (end_dt - now).total_seconds() / 60.0
+            carbon_intensity, _ = get_carbon_intensity()
 
-        carbon_intensity, _ = get_carbon_intensity()
-
-        print(f"Time left in window: {time_left_in_window:.1f} min")
-        if estimated_time is not None:
+            print(f"Time left in window: {time_left_in_window:.1f} min")
             print(f"Battery needs: {estimated_time:.1f} min to be full.")
-        if carbon_intensity is not None:
             print(f"Current carbon intensity: {carbon_intensity} gCO2eq/kWh.")
 
-        if estimated_time <= 0.1:
-            print("The computer is fully charged.")
-            relay_off(serial_conn)
-            break
+            if estimated_time <= 0.1:
+                print("The computer is fully charged.")
+                relay_on(serial_conn)
+                break
 
-        if time_left_in_window <= estimated_time:
-            print("Charging relay OFF (must reach 100% by deadline).")
-            relay_off(serial_conn)
+            if time_left_in_window <= estimated_time:
+                print("Charging relay OFF (must reach 100% by deadline).")
 
-        elif carbon_intensity  <= CARBON_INTENSITY_THRESHOLD:
-            print("Charging relay OFF (carbon emissions are low).")
-            relay_off(serial_conn)
-        else:
-            print("Charging relay ON (carbon emissions are high).")
-            relay_on(serial_conn)
+            elif carbon_intensity  <= CARBON_INTENSITY_THRESHOLD:
+                print("Charging relay OFF (carbon emissions are low).")
+            else:
+                print("Charging relay ON (carbon emissions are high).")
+                relay_on(serial_conn)
 
         time.sleep(60)
 
