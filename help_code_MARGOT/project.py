@@ -87,6 +87,7 @@ def relay_off(serial_conn):
     if serial_conn:
         serial_conn.write(b'OFF\n')
         print("Sent: OFF")
+
 ######################################
 # BATTERY MANAGEMENT
 ######################################
@@ -172,42 +173,27 @@ def control_charging(start_dt, end_dt, serial_conn):
             time.sleep(60)
             continue
 
-        status = get_battery_state()
-        charging_current = measure_current(serial_conn)
+        percentage = get_battery_percentage()
+        current_capacity = FULL_CHARGE_CAPACITY * (percentage / 100)
+        estimated_time = calculate_remaining_time(FULL_CHARGE_CAPACITY, current_capacity, charging_current, VOLTAGE)
+        time_left_in_window = (end_dt - now).total_seconds() / 60.0
+        carbon_intensity, _ = get_carbon_intensity()
+        print(f"Time left in window: {time_left_in_window:.1f} min")
+        print(f"Battery needs: {estimated_time:.1f} min to be full.")
+        print(f"Current carbon intensity: {carbon_intensity} gCO2eq/kWh.")
 
-        if charging_current is None:
-           print("Computer is not charging.")
-           break
-        elif status == 1:
-            print("Computer is not plugged.")
+        if estimated_time <= 0.1:
+            print("The computer is fully charged.")
+            relay_on(serial_conn)
             break
+
+        if time_left_in_window <= estimated_time:
+            print("Charging relay OFF (must reach 100% by deadline).")
+        elif carbon_intensity  <= CARBON_INTENSITY_THRESHOLD:
+            print("Charging relay OFF (carbon emissions are low).")
         else:
-            percentage = get_battery_percentage()
-            current_capacity = FULL_CHARGE_CAPACITY * (percentage / 100)
-            #print(charging_current)
-
-            estimated_time = calculate_remaining_time(FULL_CHARGE_CAPACITY, current_capacity, charging_current, VOLTAGE)
-            time_left_in_window = (end_dt - now).total_seconds() / 60.0
-
-            carbon_intensity, _ = get_carbon_intensity()
-
-            print(f"Time left in window: {time_left_in_window:.1f} min")
-            print(f"Battery needs: {estimated_time:.1f} min to be full.")
-            print(f"Current carbon intensity: {carbon_intensity} gCO2eq/kWh.")
-
-            if estimated_time <= 0.1:
-                print("The computer is fully charged.")
-                relay_on(serial_conn)
-                break
-
-            if time_left_in_window <= estimated_time:
-                print("Charging relay OFF (must reach 100% by deadline).")
-
-            elif carbon_intensity  <= CARBON_INTENSITY_THRESHOLD:
-                print("Charging relay OFF (carbon emissions are low).")
-            else:
-                print("Charging relay ON (carbon emissions are high).")
-                relay_on(serial_conn)
+            print("Charging relay ON (carbon emissions are high).")
+            relay_on(serial_conn)
 
         time.sleep(60)
 
@@ -222,7 +208,15 @@ if __name__ == "__main__":
     # Get the charging window
     start_dt, end_dt = get_charging_window()
 
-    # Start the control loop
-    if serial_conn:
-        control_charging(start_dt, end_dt, serial_conn)
-        serial_conn.close()
+    status = get_battery_state()
+    charging_current = measure_current(serial_conn)
+
+    if charging_current is None:
+        print("Computer is not charging.")
+    elif status == 1:
+        print("Computer is not plugged.")
+    else:
+        # Start the control loop
+        if serial_conn:
+            control_charging(start_dt, end_dt, serial_conn)
+            serial_conn.close()
