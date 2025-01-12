@@ -161,7 +161,6 @@ def control_charging(start_dt, end_dt, serial_conn):
     """
     while True:
         now = datetime.datetime.now()
-        relay_off(serial_conn)
 
         if now >= end_dt:
             print("End of charging window reached. Stopping control loop.")
@@ -189,8 +188,10 @@ def control_charging(start_dt, end_dt, serial_conn):
 
         if time_left_in_window <= estimated_time:
             print("Charging relay OFF (must reach 100% by deadline).")
+            relay_off(serial_conn)
         elif carbon_intensity  <= CARBON_INTENSITY_THRESHOLD:
             print("Charging relay OFF (carbon emissions are low).")
+            relay_off(serial_conn)
         else:
             print("Charging relay ON (carbon emissions are high).")
             relay_on(serial_conn)
@@ -211,6 +212,8 @@ if __name__ == "__main__":
     status = get_battery_state()
     charging_current = measure_current(serial_conn)
 
+    relay_off(serial_conn)
+    time.sleep(2)
     if charging_current is None:
         print("Computer is not charging.")
     elif status == 1:
