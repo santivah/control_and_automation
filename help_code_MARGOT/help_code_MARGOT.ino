@@ -5,7 +5,7 @@
 #define ADS1115_ADDRESS 0x48
 
 // Define the pins of the Arduino 
-const int SensorPin = A1, RefPin = A2;
+const int SensorPin = A1, RefPin = A2, relayPin = D7;
 
 // Define the data from the current sensor
 const int Rshunt = 33.3;                // Resistance of the transformer: Model 50 A: 20 ohms, Model 30 A: 33.3 ohms
@@ -69,15 +69,29 @@ float read_voltage(){
 // setup Function: Function that runs once on startup
 //=================================================================================================================================
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(9600);
   config_i2c();
   pinMode(SensorPin, INPUT); // declare sensor as input
+  pinMode(relayPin, OUTPUT);
 }
 
 //=================================================================================================================================
 // loop Function: Function that runs cyclically indefinitely
 //=================================================================================================================================
 void loop() {
+  // Check for serial input
+  if (Serial.available() > 0) {
+    String command = Serial.readStringUntil('\n');  // Read until newline
+
+    if (command == "ON") {
+      digitalWrite(relayPin, HIGH);  // Turn the relay on
+      Serial.println("Relay ON");
+    } else if (command == "OFF") {
+      digitalWrite(relayPin, LOW);   // Turn the relay off
+      Serial.println("Relay OFF");
+    }
+  }
+
   // Read the time in microseconds since the Arduino started
   act_time = micros();
   // Calculate the time difference between the current time and the last time the instantaneous current was updated
