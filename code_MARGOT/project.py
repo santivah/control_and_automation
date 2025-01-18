@@ -98,6 +98,7 @@ def get_battery_state():
      c = wmi.WMI()
      batteries = c.Win32_Battery()
      #print(batteries[0].BatteryStatus)
+     
      return batteries[0].BatteryStatus
 
 def get_battery_percentage():
@@ -106,20 +107,44 @@ def get_battery_percentage():
     """
     c = wmi.WMI()
     batteries = c.Win32_Battery()
+    #print(batteries[0].EstimatedChargeRemaining)
     return batteries[0].EstimatedChargeRemaining
 
-def calculate_remaining_time(full_charge_capacity, current_capacity, charging_current, VOLTAGE):
-    """
-    Calculates remaining charging time.
-    :param full_charge_capacity: Total battery capacity in mWh.
-    :param current_capacity: Current battery charge in mWh.
-    :param charging_current: Current used for charging in mA.
-    :param voltage: Nominal voltage of the battery (V)
-    :return: Remaining time in minutes.
-    """
-    remaining_capacity = (full_charge_capacity - current_capacity)*1000
-    return (remaining_capacity / (charging_current * VOLTAGE)) * 60  # Convert hours to minutes
+# def calculate_remaining_time(full_charge_capacity, current_capacity, charging_current, VOLTAGE):
+#     """
+#     Calculates remaining charging time.
+#     :param full_charge_capacity: Total battery capacity in mWh.
+#     :param current_capacity: Current battery charge in mWh.
+#     :param charging_current: Current used for charging in mA.
+#     :param voltage: Nominal voltage of the battery (V)
+#     :return: Remaining time in minutes.
+#     """
+    
+#     remaining_capacity = (full_charge_capacity - current_capacity)*1000
+#     return (remaining_capacity / (charging_current * VOLTAGE)) * 60  # Convert hours to minutes
 
+def calculate_remaining_charge_time():
+    # charge for 5 minutes 
+    relay_off(serial_conn)
+    
+    # see charge percentage 
+    initial_charge = get_battery_percentage()
+    
+    # wait for 5 minutes to get charging rate 
+    print("Waiting for 5 minutes to gather charging data...")
+    time.sleep(300)  
+    
+    new_charge = get_battery_percentage()
+    
+    # Calculate the charging rate (percentage per minute)
+    charge_rate = (new_charge - initial_charge) / 5  # Since 5 minutes have passed
+    print(f"Charging Rate: {charge_rate} % per minute")
+    
+    # Calculate time to full charge
+    time_to_full_charge = (100 - new_charge) / charge_rate  # in minutes
+    print(f"Estimated Time to Full Charge: {time_to_full_charge} minutes")
+
+    return time_to_full_charge
 
 ######################################
 # CHARGING WINDOW MANAGEMENT
@@ -174,7 +199,8 @@ def control_charging(start_dt, end_dt, serial_conn):
 
         percentage = get_battery_percentage()
         current_capacity = FULL_CHARGE_CAPACITY * (percentage / 100)
-        estimated_time = calculate_remaining_time(FULL_CHARGE_CAPACITY, current_capacity, charging_current, VOLTAGE)
+        #estimated_time = calculate_remaining_time(FULL_CHARGE_CAPACITY, current_capacity, charging_current, VOLTAGE)
+        estimated_time = calculate_remaining_charge_time()
         time_left_in_window = (end_dt - now).total_seconds() / 60.0
         carbon_intensity, _ = get_carbon_intensity()
         print(f"Time left in window: {time_left_in_window:.1f} min")
@@ -214,10 +240,11 @@ if __name__ == "__main__":
 
     relay_off(serial_conn)
     time.sleep(2)
+
     if charging_current is None:
         print("Computer is not charging.")
     elif status == 1:
-        print("Computer is not plugged.")
+        print("Computer is not plugged in.")
     else:
         # Start the control loop
         if serial_conn:
