@@ -1,8 +1,14 @@
 // help code for python
 
+#include <WiFi.h>
+#include <WiFiClientSecure.h>
+#include <UniversalTelegramBot.h>
+#include <ArduinoJson.h>
 #include <Wire.h>
 
 #define ADS1115_ADDRESS 0x48
+#define BOTtoken "8190157750:AAFva8eCbX0hptrUPS2EWAW8jk-tQ8LceAU" // for telegram bot 
+#define CHAT_ID "7994481953" // for telegram bot 
 
 // Define the pins of the Arduino 
 const int SensorPin = A1, RefPin = A2, relayPin = D7;
@@ -33,6 +39,13 @@ int i = 0;
 byte writeBuf[3];
 
 double Irms_filt = 0;
+
+// Define variables for the telegram bot 
+const char* ssid = "ard-citcea";
+const char* password = "ax1ohChooli0quof";
+
+WiFiClientSecure client;
+UniversalTelegramBot bot(BOTtoken, client);
 
 //=================================================================================================================================
 // Helper functions: Function created to partition the problem in smaller parts
@@ -73,12 +86,27 @@ void setup() {
   config_i2c();
   pinMode(SensorPin, INPUT); // declare sensor as input
   pinMode(relayPin, OUTPUT);
+
+  // for telegram:
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  client.setCACert(TELEGRAM_CERTIFICATE_ROOT);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.println("WiFi connected");
+
 }
 
 //=================================================================================================================================
 // loop Function: Function that runs cyclically indefinitely
 //=================================================================================================================================
 void loop() {
+
+  bot.sendMessage(CHAT_ID, "hi", "");
+
   // Check for serial input
   if (Serial.available() > 0) {
     String command = Serial.readStringUntil('\n');  // Read until newline
