@@ -204,8 +204,8 @@ def send_telegram_message(serial_conn, message):
     Send a message to the Arduino to forward to the Telegram bot.
     """
     if serial_conn and message:
-        command = message + '\n'
-        serial_conn.write(command.encode('utf-8'))
+        command = f"MSG:{message}\n"  # Format the command with the message variable
+        serial_conn.write(command.encode())  # Encode the string to bytes before writing
 
 ######################################
 # CONTROL CHARGING
@@ -260,7 +260,7 @@ def control_charging(start_dt, end_dt, serial_conn):
             print("Charging relay ON (carbon emissions are high).")
             relay_on(serial_conn)
 
-        time.sleep(300)
+        time.sleep(60)
 
 ######################################
 # MAIN EXECUTION

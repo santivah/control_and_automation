@@ -123,6 +123,7 @@ void loop() {
       } else if (command.startsWith("MSG:")) {  // Check if the command is a Telegram message
           String message = command.substring(4);  // Extract the message after "MSG:"
           bot.sendMessage(CHAT_ID, message, "");
+          Serial.println('CHAT');
       }
   }
 
@@ -185,7 +186,7 @@ void loop() {
     } else {
       Serial.println("There is no movement");
     }
-}
+  }
 
     //int sensorValue = analogRead(UltrasonicPin); // Read the analog value
     //double distance = (sensorValue / 66535) * 3.3 * 100; // Convert to distance (1V = 100 cm)
@@ -205,4 +206,4 @@ void loop() {
     //lastDistance = distance; // Update the last distance value
 
   //}
-//}
+}
