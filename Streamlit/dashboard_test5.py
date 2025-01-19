@@ -86,7 +86,7 @@ default_end_date = datetime.now().date()
 st.sidebar.header("⚙️ Dashboard Controls")
 
 # Sidebar for dark mode toggle
-st.sidebar.header("🌙 Accessibility Features")
+st.sidebar.header("Accessibility Features")
 #dark_mode = st.sidebar.checkbox("Enable Dark Mode 🌚")
 dark_mode = st.sidebar.checkbox("Enable Dark Mode 🌚", value=False)
 
@@ -221,7 +221,7 @@ if response.status_code == 200:
                 st.dataframe(data)
 
             # CO2 Emissions Section            
-            st.subheader("Latest Carbon Intensity Data")
+            st.subheader("Latest Carbon Emissions Data")
 
             if CO2_df is not None:
                 # Display the current threshold and status
@@ -316,7 +316,7 @@ if response.status_code == 200:
                 CO2_df,
                 x='Timestamp',
                 y='Carbon_Intensity_(gCO2eq/kWh)',
-                title='Latest Carbon Intensity Data',
+                title='Latest Carbon Emissions Data',
                 labels={
                     'Carbon_Intensity_(gCO2eq/kWh)': 'Carbon Intensity (gCO₂eq/kWh)',
                     'Timestamp': 'Timestamp'
