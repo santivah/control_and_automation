@@ -17,7 +17,7 @@ CARBON_INTENSITY_THRESHOLD = 90  # gCO2eq/kWh threshold for eco-friendly chargin
 DEFAULT_PORT = "COM3"
 BAUD_RATE = 9600
 FULL_CHARGE_CAPACITY = 37.979  # in mWh
-VOLTAGE = 1.1 #V
+VOLTAGE = 11.1 #V
 
 ######################################
 # API UTILITIES
@@ -198,8 +198,8 @@ def control_charging(start_dt, end_dt, serial_conn):
             continue
 
         percentage = get_battery_percentage()
-        current_capacity = FULL_CHARGE_CAPACITY * (percentage / 100)
-        #estimated_time = calculate_remaining_time(FULL_CHARGE_CAPACITY, current_capacity, charging_current, VOLTAGE)
+        # current_capacity = FULL_CHARGE_CAPACITY * (percentage / 100)
+        # estimated_time = calculate_remaining_time(FULL_CHARGE_CAPACITY, current_capacity, charging_current, VOLTAGE)
         estimated_time = calculate_remaining_charge_time()
         time_left_in_window = (end_dt - now).total_seconds() / 60.0
         carbon_intensity, _ = get_carbon_intensity()
