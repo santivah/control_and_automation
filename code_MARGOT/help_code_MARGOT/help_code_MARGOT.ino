@@ -42,8 +42,10 @@ byte writeBuf[3];
 double Irms_filt = 0;
 
 // Define variables for the telegram bot 
-const char* ssid = "ard-citcea";
-const char* password = "ax1ohChooli0quof";
+// const char* ssid = "ard-citcea";
+// const char* password = "ax1ohChooli0quof";
+const char* ssid = "Livebox6-D583";
+const char* password = "5c9s73JvCLSP";
 
 WiFiClientSecure client;
 UniversalTelegramBot bot(BOTtoken, client);
@@ -175,10 +177,9 @@ void loop() {
     // Reset accumulation values to calculate the average RMS
     accumulated_current = 0;
     accumulated_counter = 0;
-
-    Ultrasonic = digitalRead(UltrasonicPin) // LOW corresponds to object nearby 
+ 
     Serial.print("Ultrasonic: ");
-    Serial.println(Ultrasonic);
+    Serial.println(digitalRead(UltrasonicPin));
 
   }
 }
