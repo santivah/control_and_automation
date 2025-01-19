@@ -177,6 +177,18 @@ def get_charging_window():
     return start_dt, end_dt
 
 ######################################
+# TELEGRAM MESSAGING
+######################################
+
+def send_telegram_message(serial_conn, message):
+    """
+    Send a message to the Arduino to forward to the Telegram bot.
+    """
+    if serial_conn and message:
+        command = message + '\n'
+        serial_conn.write(command.encode('utf-8'))
+
+######################################
 # CONTROL CHARGING
 ######################################
 
@@ -234,17 +246,20 @@ if __name__ == "__main__":
 
     # Get the charging window
     start_dt, end_dt = get_charging_window()
+    
 
     status = get_battery_state()
     charging_current = measure_current(serial_conn)
-
+    
     relay_off(serial_conn)
     time.sleep(2)
 
     if charging_current is None:
         print("Computer is not charging.")
+        send_telegram_message(serial_conn, "Heyo Friend! your laptop is charging")
     elif status == 1:
         print("Computer is not plugged in.")
+        send_telegram_message(serial_conn, "Heyo Friend! your laptop is not charging")
     else:
         # Start the control loop
         if serial_conn:

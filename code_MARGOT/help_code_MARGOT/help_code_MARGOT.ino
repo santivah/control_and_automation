@@ -105,19 +105,20 @@ void setup() {
 //=================================================================================================================================
 void loop() {
 
-  bot.sendMessage(CHAT_ID, "hi", "");
-
   // Check for serial input
   if (Serial.available() > 0) {
-    String command = Serial.readStringUntil('\n');  // Read until newline
+      String command = Serial.readStringUntil('\n');  // Read until newline
 
-    if (command == "ON") {
-      digitalWrite(relayPin, HIGH);  // Turn the relay on
-      Serial.println("Relay ON");
-    } else if (command == "OFF") {
-      digitalWrite(relayPin, LOW);   // Turn the relay off
-      Serial.println("Relay OFF");
-    }
+      if (command == "ON") {
+          digitalWrite(relayPin, HIGH);  // Turn the relay on
+          Serial.println("Relay ON");
+      } else if (command == "OFF") {
+          digitalWrite(relayPin, LOW);   // Turn the relay off
+          Serial.println("Relay OFF");
+      } else if (command.startsWith("MSG:")) {  // Check if the command is a Telegram message
+          String message = command.substring(4);  // Extract the message after "MSG:"
+          bot.sendMessage(CHAT_ID, message, "");
+      }
   }
 
   // Read the time in microseconds since the Arduino started
