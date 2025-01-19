@@ -12,6 +12,7 @@
 
 // Define the pins of the Arduino 
 const int SensorPin = A1, RefPin = A2, relayPin = D7;
+const int UltrasonicPin = 2; // Digital Pin 2 is for the ultrasonic sensor 
 
 // Define the data from the current sensor
 const int Rshunt = 33.3;                // Resistance of the transformer: Model 50 A: 20 ohms, Model 30 A: 33.3 ohms
@@ -86,6 +87,7 @@ void setup() {
   config_i2c();
   pinMode(SensorPin, INPUT); // declare sensor as input
   pinMode(relayPin, OUTPUT);
+  pinMode(UltrasonicPin, INPUT); // ultrasonic sensor pin is input 
 
   // for telegram:
   WiFi.mode(WIFI_STA);
@@ -163,7 +165,7 @@ void loop() {
     accumulated_counter++;
   }
 
-  // EVERY 250 POWER CYCLES (approximately 5 seconds), CALCULATE THE AVERAGE RMS
+  // EVERY 250 POWER CYCLES (approximately 5 seconds), CALCULATE THE AVERAGE RMS and print the Ultrasonic sensor reading 
   if (accumulated_counter >= sampleAverage) {
     // Calculate the average of the RMS current
     double Irms_filt = accumulated_current / ((double)accumulated_counter);
@@ -173,5 +175,10 @@ void loop() {
     // Reset accumulation values to calculate the average RMS
     accumulated_current = 0;
     accumulated_counter = 0;
+
+    Ultrasonic = digitalRead(UltrasonicPin) // LOW corresponds to object nearby 
+    Serial.print("Ultrasonic: ");
+    Serial.println(Ultrasonic);
+
   }
 }

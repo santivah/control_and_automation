@@ -65,12 +65,30 @@ def measure_current(serial_conn):
         if serial_conn and serial_conn.in_waiting > 0:
             line = serial_conn.readline().decode('utf-8').strip()
             current_match = re.findall(r"[-+]?\d*\.\d+|[-+]?\d+", line)
-            if current_match:
-                return float(current_match[0])
+            if "Irms_filt:" in line:
+               return float(re.search(r"Irms_filt:\s*([-+]?\d*\.\d+)", line).group(1))
+
         return None
     except Exception as e:
         print(f"Error reading current measurement: {e}")
         return None
+
+def read_ultrasonic(serial_conn):
+    """
+    Reads the Ultrasonic value from the Arduino via serial connection.
+    :param serial_conn: Initialized serial connection.
+    :return: The Ultrasonic value (0 or 1) or None if not available.
+    """
+    try:
+        if serial_conn and serial_conn.in_waiting > 0:
+            line = serial_conn.readline().decode('utf-8').strip()
+            if "Ultrasonic:" in line:
+                return int(re.search(r"Ultrasonic:\s*(\d+)", line).group(1))
+        return None
+    except Exception as e:
+        print(f"Error reading Ultrasonic: {e}")
+        return None
+
 
 def relay_on(serial_conn):
     """
@@ -79,6 +97,7 @@ def relay_on(serial_conn):
     if serial_conn:
         serial_conn.write(b'ON\n')
         print("Sent: ON")
+        
 
 def relay_off(serial_conn):
     """
@@ -198,6 +217,11 @@ def control_charging(start_dt, end_dt, serial_conn):
     """
     while True:
         now = datetime.datetime.now()
+        
+        personFarAway = read_ultrasonic()
+        if personFarAway == 0:
+            print("You are awake! Stopping control loop.")
+            break
 
         if now >= end_dt:
             print("End of charging window reached. Stopping control loop.")
