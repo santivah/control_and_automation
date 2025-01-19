@@ -7,8 +7,8 @@
 #include <Wire.h>
 
 #define ADS1115_ADDRESS 0x48
-#define BOTtoken "8190157750:AAFva8eCbX0hptrUPS2EWAW8jk-tQ8LceAU" // for telegram bot 
-#define CHAT_ID "7994481953" // for telegram bot 
+#define BOTtoken "8155772892:AAE2sAqJJvUCjtoRNNvujKla7bq-woFEDzI" // for telegram bot 
+#define CHAT_ID "7610829513" // for telegram bot 
 
 // Define the pins of the Arduino 
 const int SensorPin = A1, RefPin = A2, relayPin = D7;
@@ -49,6 +49,7 @@ const char* password = "5c9s73JvCLSP";
 
 WiFiClientSecure client;
 UniversalTelegramBot bot(BOTtoken, client);
+
 
 //=================================================================================================================================
 // Helper functions: Function created to partition the problem in smaller parts
@@ -177,9 +178,31 @@ void loop() {
     // Reset accumulation values to calculate the average RMS
     accumulated_current = 0;
     accumulated_counter = 0;
- 
-    Serial.print("Ultrasonic: ");
-    Serial.println(digitalRead(UltrasonicPin));
 
-  }
+    // Ultrasonic movement detection
+    if (digitalRead(UltrasonicPin) == LOW) {
+      Serial.println("There is movement");
+    } else {
+      Serial.println("There is no movement");
+    }
 }
+
+    //int sensorValue = analogRead(UltrasonicPin); // Read the analog value
+    //double distance = (sensorValue / 66535) * 3.3 * 100; // Convert to distance (1V = 100 cm)
+
+    // Check if the distance has significantly changed
+    //static double lastDistance = 0;
+    //double threshold = 2.0; // Sensitivity threshold in cm
+
+    //if (abs(distance - lastDistance) > threshold) {
+      //Serial.println("There is movement");
+      //Serial.println(distance);
+    //} else {
+      //Serial.println("There is no movement");
+      //Serial.println(distance);
+    //}
+
+    //lastDistance = distance; // Update the last distance value
+
+  //}
+//}

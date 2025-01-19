@@ -218,9 +218,10 @@ def control_charging(start_dt, end_dt, serial_conn):
     while True:
         now = datetime.datetime.now()
         
-        personFarAway = read_ultrasonic()
+        personFarAway = read_ultrasonic(serial_conn)
         if personFarAway == 0:
             print("You are awake! Stopping control loop.")
+            send_telegram_message(serial_conn, "Heyo Friend! Good morning! You are awake. Charging has been interrupted as you prepare for work")
             break
 
         if now >= end_dt:
@@ -245,6 +246,7 @@ def control_charging(start_dt, end_dt, serial_conn):
 
         if estimated_time <= 0.1:
             print("The computer is fully charged.")
+            send_telegram_message(serial_conn, "Heyo Friend! Your laptop is fully charged")
             relay_on(serial_conn)
             break
 
@@ -258,7 +260,7 @@ def control_charging(start_dt, end_dt, serial_conn):
             print("Charging relay ON (carbon emissions are high).")
             relay_on(serial_conn)
 
-        time.sleep(60)
+        time.sleep(300)
 
 ######################################
 # MAIN EXECUTION
@@ -270,7 +272,6 @@ if __name__ == "__main__":
 
     # Get the charging window
     start_dt, end_dt = get_charging_window()
-    
 
     status = get_battery_state()
     charging_current = measure_current(serial_conn)
@@ -280,7 +281,7 @@ if __name__ == "__main__":
 
     if charging_current is None:
         print("Computer is not charging.")
-        send_telegram_message(serial_conn, "Heyo Friend! your laptop is charging")
+        send_telegram_message(serial_conn, "Heyo Friend! your laptop is not charging")
     elif status == 1:
         print("Computer is not plugged in.")
         send_telegram_message(serial_conn, "Heyo Friend! your laptop is not charging")
