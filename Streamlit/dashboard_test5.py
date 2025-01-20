@@ -92,41 +92,7 @@ st.sidebar.header("⚙️ Dashboard Controls")
 # Update plotly template based on the dark mode toggle
 plotly_template = "plotly" #if dark_mode else "plotly"
 
-'''
-# Define Plotly theme based on the dark mode toggle
-if dark_mode:
-    plotly_template = "plotly_dark"
-    st.markdown(
-        """
-        <style>
-        body {
-            background-color: #2B2B2B;
-            color: white;
-        }
-        .sidebar-content {
-            background-color: #333333;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-else:
-    plotly_template = "plotly"
-    st.markdown(
-        """
-        <style>
-        body {
-            background-color: white;
-            color: black;
-        }
-        .sidebar-content {
-            background-color: #f0f0f0;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-'''
+
 
 # Sidebar date inputs
 start_date = st.sidebar.date_input("Start Date", value=default_start_date, min_value=default_start_date)
