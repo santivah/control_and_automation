@@ -85,13 +85,14 @@ default_end_date = datetime.now().date()
 st.sidebar.header("⚙️ Dashboard Controls")
 
 # Sidebar for dark mode toggle
-st.sidebar.header("Accessibility Features")
+#st.sidebar.header("Accessibility Features")
 #dark_mode = st.sidebar.checkbox("Enable Dark Mode 🌚")
-dark_mode = st.sidebar.checkbox("Enable Dark Mode 🌚", value=False)
+#dark_mode = st.sidebar.checkbox("Enable Dark Mode 🌚", value=False)
 
 # Update plotly template based on the dark mode toggle
-plotly_template = "plotly_dark" if dark_mode else "plotly"
+plotly_template = "plotly" #if dark_mode else "plotly"
 
+'''
 # Define Plotly theme based on the dark mode toggle
 if dark_mode:
     plotly_template = "plotly_dark"
@@ -125,6 +126,7 @@ else:
         """,
         unsafe_allow_html=True,
     )
+'''
 
 # Sidebar date inputs
 start_date = st.sidebar.date_input("Start Date", value=default_start_date, min_value=default_start_date)
